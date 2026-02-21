@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Order App Pro</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+
+    <div class="top-bar">
+      <h2>🍽 Order App Pro</h2>
+      <button class="toggle-btn" onclick="toggleDarkMode()">🌙</button>
+    </div>
+
+    <form id="orderForm">
+      <div class="input-group">
+        <label>Nama</label>
+        <input type="text" id="nama" required>
+      </div>
+
+      <div class="input-group">
+        <label>Pilih Menu</label>
+        <select id="menu">
+          <option>Nasi Goreng</option>
+          <option>Mie Ayam</option>
+          <option>Bakso</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Upload Foto</label>
+        <input type="file" id="foto" accept="image/*" required>
+      </div>
+
+      <button type="submit">Simpan Pesanan</button>
+    </form>
+
+    <hr>
+
+    <h3>📋 Data Pesanan</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama</th>
+          <th>Menu</th>
+          <th>Foto</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="orderList"></tbody>
+    </table>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbwu7VOHDJ8PDzLRQnfaVmbnUNOCbYE1XcZBoQXRRKK5iNmcviwCnVmmunU8i_7m0zTQ/exec";
+
+// LOAD DATA DARI SPREADSHEET
+window.onload = function() {
+  fetch(scriptURL)
+    .then(res => res.json())
+    .then(data => {
+      data.forEach((row, index) => {
+        addToTable(index + 1, row[1], row[2], row[3]);
+      });
+    });
+};
+
+// SIMPAN
+document.getElementById("orderForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const nama = document.getElementById("nama").value;
+  const menu = document.getElementById("menu").value;
+  const file = document.getElementById("foto").files[0];
+
+  const reader = new FileReader();
+  reader.onload = function() {
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "add",
+        nama: nama,
+        menu: menu,
+        foto: reader.result
+      })
+    })
+    .then(res => res.json())
+    .then(() => {
+      showToast("✅ Pesanan tersimpan!", "success");
+      location.reload();
+    });
+
+  };
+  reader.readAsDataURL(file);
+});
+
+// HAPUS
+function deleteOrder(rowNumber) {
+  fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "delete",
+      row: rowNumber + 1
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    showToast("🗑 Data dihapus!", "success");
+    location.reload();
+  });
+}
+
+function addToTable(no, nama, menu, fotoUrl) {
+  const table = document.getElementById("orderList");
+  const row = table.insertRow();
+
+  row.innerHTML = `
+    <td>${no}</td>
+    <td>${nama}</td>
+    <td>${menu}</td>
+    <td><a href="${fotoUrl}" target="_blank">Lihat</a></td>
+    <td><button class="delete-btn" onclick="deleteOrder(${no})">Hapus</button></td>
+  `;
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+}
+
+function showToast(message, type) {
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.className = "toast show " + type;
+
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
