@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Menu Makan dan Minum BukBer IKA</title>
+<title>Order App Pro</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div class="card">
 
     <div class="top-bar">
-      <h2>🍽 Selamat Datang <br> Silahkan Isi Data dibawah ini</h2>
+      <h2>🍽 Order App Pro</h2>
       <button class="toggle-btn" onclick="toggleDarkMode()">🌙</button>
     </div>
 
@@ -21,6 +21,7 @@
         <input type="text" id="nama" required>
       </div>
 
+      <!-- MENU -->
       <div class="input-group">
         <label>Pilih Menu</label>
         <select id="menu">
@@ -31,7 +32,8 @@
         </select>
         <small id="hargaMenu">Harga: Rp 0</small>
       </div>
-      
+
+      <!-- MINUM -->
       <div class="input-group">
         <label>Pilih Minum</label>
         <select id="minum">
@@ -42,37 +44,50 @@
         </select>
         <small id="hargaMinum">Harga: Rp 0</small>
       </div>
-      
+
+      <!-- MENU LAINNYA -->
+      <div class="input-group">
+        <label>Menu Lainnya</label>
+        <select id="lainnya">
+          <option value="" data-harga="0">-- Pilih Menu Tambahan --</option>
+          <option value="Kentang" data-harga="15000">Kentang</option>
+          <option value="Sosis" data-harga="10000">Sosis</option>
+          <option value="Nugget" data-harga="12000">Nugget</option>
+        </select>
+        <small id="hargaLainnya">Harga: Rp 0</small>
+      </div>
+
+      <!-- TOTAL -->
       <div class="input-group">
         <label>Total Harga</label>
         <input type="text" id="totalHarga" readonly value="Rp 0">
       </div>
 
       <div class="input-group">
-        <label>Upload Foto Bukti Transfer Dana <br> kirim ke no Dana 082335740491 </label>
+        <label>Upload Foto Bukti Transfer Dana <br> kirim ke no Dana 082335740491</label>
         <input type="file" id="foto" accept="image/*" required>
       </div>
 
       <button type="submit">Simpan Pesanan</button>
     </form>
-<div class="maps">
-   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5101.170831402099!2d113.2485928!3d-7.7602258000000015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7ad0048448d8b%3A0xda8db517ae59dfd9!2sNKS%20COFFEE!5e1!3m2!1sid!2sid!4v1771724105090!5m2!1sid!2sid" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div>
+
     <hr>
 
     <h3>📋 Data Pesanan</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Nama</th>
-          <th>Menu</th>
-          <th>Foto</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="orderList"></tbody>
-    </table>
+<table>
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Nama</th>
+      <th>Menu</th>
+      <th>Minum</th>
+      <th>Lainnya</th>
+      <th>Total</th>
+      <th>Foto</th>
+    </tr>
+  </thead>
+  <tbody id="orderList"></tbody>
+</table>
 
   </div>
 </div>
@@ -80,55 +95,152 @@
 <div id="toast" class="toast"></div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbyowUMDVOIebscluvQu-uIifleRtkXn9qweVRR0hy1xlCKXZHDtPpPMlA_-TmldMaiN/exec";
 
-// LOAD DATA DARI SPREADSHEET
+const scriptURL = "https://script.google.com/macros/s/AKfycbzHEEHB_rputks3JAO7FcJ7sghw5UZdB5zJ6VaICnUZpEiSuzAxWG-4FV9f53qJSpaMdQ/exec";
+
+// ==========================
+// LOAD DATA
+// ==========================
 window.onload = function() {
   fetch(scriptURL)
     .then(res => res.json())
     .then(data => {
       data.forEach((row, index) => {
-        addToTable(index + 1, row[1], row[2], row[3]);
-      });
+  addToTable(
+    index + 1,
+    row[1],  // nama
+    row[2],  // menu
+    row[3],  // minum
+    row[4],  // lainnya
+    row[5],  // total
+    row[6]   // foto
+  );
+});
     });
 };
 
-// SIMPAN
+// ==========================
+// HITUNG TOTAL
+// ==========================
+const menuSelect = document.getElementById("menu");
+const minumSelect = document.getElementById("minum");
+const lainnyaSelect = document.getElementById("lainnya");
+
+menuSelect.addEventListener("change", updateAll);
+minumSelect.addEventListener("change", updateAll);
+lainnyaSelect.addEventListener("change", updateAll);
+
+function updateAll(){
+  hitungTotal();
+  simpanDraft();
+}
+
+function hitungTotal() {
+
+  const hargaMenu = parseInt(menuSelect.options[menuSelect.selectedIndex].dataset.harga);
+  const hargaMinum = parseInt(minumSelect.options[minumSelect.selectedIndex].dataset.harga);
+  const hargaLainnya = parseInt(lainnyaSelect.options[lainnyaSelect.selectedIndex].dataset.harga);
+
+  document.getElementById("hargaMenu").innerText =
+    "Harga: Rp " + hargaMenu.toLocaleString("id-ID");
+
+  document.getElementById("hargaMinum").innerText =
+    "Harga: Rp " + hargaMinum.toLocaleString("id-ID");
+
+  document.getElementById("hargaLainnya").innerText =
+    "Harga: Rp " + hargaLainnya.toLocaleString("id-ID");
+
+  const total = hargaMenu + hargaMinum + hargaLainnya;
+
+  document.getElementById("totalHarga").value =
+    "Rp " + total.toLocaleString("id-ID");
+}
+
+// ==========================
+// SIMPAN PESANAN
+// ==========================
 document.getElementById("orderForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
   const nama = document.getElementById("nama").value;
-  const menu = document.getElementById("menu").value;
+  const menu = menuSelect.value;
+  const minum = minumSelect.value;
+  const lainnya = lainnyaSelect.value;
+  const total = document.getElementById("totalHarga").value;
   const file = document.getElementById("foto").files[0];
 
   const reader = new FileReader();
   reader.onload = function() {
 
-    const minum = document.getElementById("minum").value;
-const total = document.getElementById("totalHarga").value;
-
-fetch(scriptURL, {
+    fetch(scriptURL, {
   method: "POST",
   body: JSON.stringify({
     action: "add",
     nama: nama,
     menu: menu,
     minum: minum,
+    lainnya: lainnya,
     total: total,
     foto: reader.result
   })
 })
     .then(res => res.json())
     .then(() => {
+      localStorage.clear();
       showToast("✅ Pesanan tersimpan!", "success");
       location.reload();
     });
-
   };
   reader.readAsDataURL(file);
 });
 
-// HAPUS
+// ==========================
+// AUTO SAVE (ANTI HILANG)
+// ==========================
+document.getElementById("nama").addEventListener("input", simpanDraft);
+
+function simpanDraft(){
+  localStorage.setItem("draftNama", document.getElementById("nama").value);
+  localStorage.setItem("draftMenu", menuSelect.value);
+  localStorage.setItem("draftMinum", minumSelect.value);
+  localStorage.setItem("draftLainnya", lainnyaSelect.value);
+  localStorage.setItem("draftTotal", document.getElementById("totalHarga").value);
+}
+
+window.addEventListener("DOMContentLoaded", function(){
+  if(localStorage.getItem("draftNama"))
+    document.getElementById("nama").value = localStorage.getItem("draftNama");
+
+  if(localStorage.getItem("draftMenu"))
+    menuSelect.value = localStorage.getItem("draftMenu");
+
+  if(localStorage.getItem("draftMinum"))
+    minumSelect.value = localStorage.getItem("draftMinum");
+
+  if(localStorage.getItem("draftLainnya"))
+    lainnyaSelect.value = localStorage.getItem("draftLainnya");
+
+  hitungTotal();
+});
+
+// ==========================
+// TABLE
+// ==========================
+function addToTable(no, nama, menu, minum, lainnya, total, fotoUrl) {
+  const table = document.getElementById("orderList");
+  const row = table.insertRow();
+
+  row.innerHTML = `
+    <td>${no}</td>
+    <td>${nama}</td>
+    <td>${menu}</td>
+    <td>${minum}</td>
+    <td>${lainnya}</td>
+    <td>${total}</td>
+    <td><a href="${fotoUrl}" target="_blank">Lihat</a></td>
+  `;
+}
+
 function deleteOrder(rowNumber) {
   fetch(scriptURL, {
     method: "POST",
@@ -138,23 +250,7 @@ function deleteOrder(rowNumber) {
     })
   })
   .then(res => res.json())
-  .then(() => {
-    showToast("🗑 Data dihapus!", "success");
-    location.reload();
-  });
-}
-
-function addToTable(no, nama, menu, fotoUrl) {
-  const table = document.getElementById("orderList");
-  const row = table.insertRow();
-
-  row.innerHTML = `
-    <td>${no}</td>
-    <td>${nama}</td>
-    <td>${menu}</td>
-    <td><a href="${fotoUrl}" target="_blank">Lihat</a></td>
-    <td><button class="delete-btn" onclick="deleteOrder(${no})">Hapus</button></td>
-  `;
+  .then(() => location.reload());
 }
 
 function toggleDarkMode() {
@@ -165,71 +261,9 @@ function showToast(message, type) {
   const toast = document.getElementById("toast");
   toast.innerText = message;
   toast.className = "toast show " + type;
-
-  setTimeout(() => {
-    toast.className = "toast";
-  }, 3000);
+  setTimeout(() => toast.className = "toast", 3000);
 }
 
-// ===============================
-// AUTO SAVE FORM (ANTI HILANG)
-// ===============================
-
-// Simpan setiap kali user mengetik
-document.getElementById("nama").addEventListener("input", function() {
-  localStorage.setItem("draftNama", this.value);
-});
-
-document.getElementById("menu").addEventListener("change", function() {
-  localStorage.setItem("draftMenu", this.value);
-});
-
-// Load kembali saat halaman dibuka
-window.addEventListener("DOMContentLoaded", function() {
-  const savedNama = localStorage.getItem("draftNama");
-  const savedMenu = localStorage.getItem("draftMenu");
-
-  if (savedNama) {
-    document.getElementById("nama").value = savedNama;
-  }
-
-  if (savedMenu) {
-    document.getElementById("menu").value = savedMenu;
-  }
-});
-
-// Hapus draft setelah berhasil submit
-document.getElementById("orderForm").addEventListener("submit", function() {
-  localStorage.removeItem("draftNama");
-  localStorage.removeItem("draftMenu");
-});
-
-// ==========================
-// HITUNG HARGA OTOMATIS
-// ==========================
-
-const menuSelect = document.getElementById("menu");
-const minumSelect = document.getElementById("minum");
-
-menuSelect.addEventListener("change", hitungTotal);
-minumSelect.addEventListener("change", hitungTotal);
-
-function hitungTotal() {
-
-  const hargaMenu = parseInt(menuSelect.options[menuSelect.selectedIndex].dataset.harga);
-  const hargaMinum = parseInt(minumSelect.options[minumSelect.selectedIndex].dataset.harga);
-
-  document.getElementById("hargaMenu").innerText =
-    "Harga: Rp " + hargaMenu.toLocaleString("id-ID");
-
-  document.getElementById("hargaMinum").innerText =
-    "Harga: Rp " + hargaMinum.toLocaleString("id-ID");
-
-  const total = hargaMenu + hargaMinum;
-
-  document.getElementById("totalHarga").value =
-    "Rp " + total.toLocaleString("id-ID");
-}
 </script>
 
 </body>
