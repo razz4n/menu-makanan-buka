@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Order App Pro</title>
+<title>Menu Makan dan Minum BukBer IKA</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div class="card">
 
     <div class="top-bar">
-      <h2>🍽 Order App Pro</h2>
+      <h2>🍽 Selamat Datang <br> Silahkan Isi Data dibawah ini</h2>
       <button class="toggle-btn" onclick="toggleDarkMode()">🌙</button>
     </div>
 
@@ -24,14 +24,32 @@
       <div class="input-group">
         <label>Pilih Menu</label>
         <select id="menu">
-          <option>Nasi Goreng</option>
-          <option>Mie Ayam</option>
-          <option>Bakso</option>
+          <option value="" data-harga="0">-- Pilih Menu --</option>
+          <option value="Nasi Goreng" data-harga="15000">Nasi Goreng</option>
+          <option value="Mie Ayam" data-harga="12000">Mie Ayam</option>
+          <option value="Bakso" data-harga="13000">Bakso</option>
         </select>
+        <small id="hargaMenu">Harga: Rp 0</small>
+      </div>
+      
+      <div class="input-group">
+        <label>Pilih Minum</label>
+        <select id="minum">
+          <option value="" data-harga="0">-- Pilih Minum --</option>
+          <option value="Air Putih" data-harga="3000">Air Putih</option>
+          <option value="Es Teh" data-harga="5000">Es Teh</option>
+          <option value="Jus" data-harga="8000">Jus</option>
+        </select>
+        <small id="hargaMinum">Harga: Rp 0</small>
+      </div>
+      
+      <div class="input-group">
+        <label>Total Harga</label>
+        <input type="text" id="totalHarga" readonly value="Rp 0">
       </div>
 
       <div class="input-group">
-        <label>Upload Foto</label>
+        <label>Upload Foto Bukti Transfer Dana <br> kirim ke no Dana 082335740491 </label>
         <input type="file" id="foto" accept="image/*" required>
       </div>
 
@@ -62,7 +80,7 @@
 <div id="toast" class="toast"></div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwu7VOHDJ8PDzLRQnfaVmbnUNOCbYE1XcZBoQXRRKK5iNmcviwCnVmmunU8i_7m0zTQ/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbyowUMDVOIebscluvQu-uIifleRtkXn9qweVRR0hy1xlCKXZHDtPpPMlA_-TmldMaiN/exec";
 
 // LOAD DATA DARI SPREADSHEET
 window.onload = function() {
@@ -86,15 +104,20 @@ document.getElementById("orderForm").addEventListener("submit", function(e) {
   const reader = new FileReader();
   reader.onload = function() {
 
-    fetch(scriptURL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "add",
-        nama: nama,
-        menu: menu,
-        foto: reader.result
-      })
-    })
+    const minum = document.getElementById("minum").value;
+const total = document.getElementById("totalHarga").value;
+
+fetch(scriptURL, {
+  method: "POST",
+  body: JSON.stringify({
+    action: "add",
+    nama: nama,
+    menu: menu,
+    minum: minum,
+    total: total,
+    foto: reader.result
+  })
+})
     .then(res => res.json())
     .then(() => {
       showToast("✅ Pesanan tersimpan!", "success");
@@ -147,6 +170,7 @@ function showToast(message, type) {
     toast.className = "toast";
   }, 3000);
 }
+
 // ===============================
 // AUTO SAVE FORM (ANTI HILANG)
 // ===============================
@@ -179,8 +203,34 @@ document.getElementById("orderForm").addEventListener("submit", function() {
   localStorage.removeItem("draftNama");
   localStorage.removeItem("draftMenu");
 });
+
+// ==========================
+// HITUNG HARGA OTOMATIS
+// ==========================
+
+const menuSelect = document.getElementById("menu");
+const minumSelect = document.getElementById("minum");
+
+menuSelect.addEventListener("change", hitungTotal);
+minumSelect.addEventListener("change", hitungTotal);
+
+function hitungTotal() {
+
+  const hargaMenu = parseInt(menuSelect.options[menuSelect.selectedIndex].dataset.harga);
+  const hargaMinum = parseInt(minumSelect.options[minumSelect.selectedIndex].dataset.harga);
+
+  document.getElementById("hargaMenu").innerText =
+    "Harga: Rp " + hargaMenu.toLocaleString("id-ID");
+
+  document.getElementById("hargaMinum").innerText =
+    "Harga: Rp " + hargaMinum.toLocaleString("id-ID");
+
+  const total = hargaMenu + hargaMinum;
+
+  document.getElementById("totalHarga").value =
+    "Rp " + total.toLocaleString("id-ID");
+}
 </script>
 
 </body>
 </html>
-
