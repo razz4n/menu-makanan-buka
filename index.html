@@ -31,13 +31,15 @@
       </div>
 
       <div class="input-group">
-        <label>Upload Foto Bukti Transfer Dana<br> Kirim Ke NO. Dana ➡️082335740491</label>
+        <label>Upload Foto</label>
         <input type="file" id="foto" accept="image/*" required>
       </div>
 
       <button type="submit">Simpan Pesanan</button>
     </form>
-
+<div class="maps">
+   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5101.170831402099!2d113.2485928!3d-7.7602258000000015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7ad0048448d8b%3A0xda8db517ae59dfd9!2sNKS%20COFFEE!5e1!3m2!1sid!2sid!4v1771724105090!5m2!1sid!2sid" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
     <hr>
 
     <h3>📋 Data Pesanan</h3>
@@ -145,43 +147,7 @@ function showToast(message, type) {
     toast.className = "toast";
   }, 3000);
 }
-
-// ===============================
-// AUTO SAVE FORM (ANTI HILANG)
-// ===============================
-
-// Simpan setiap kali user mengetik
-document.getElementById("nama").addEventListener("input", function() {
-  localStorage.setItem("draftNama", this.value);
-});
-
-document.getElementById("menu").addEventListener("change", function() {
-  localStorage.setItem("draftMenu", this.value);
-});
-
-// Load kembali saat halaman dibuka
-window.addEventListener("DOMContentLoaded", function() {
-  const savedNama = localStorage.getItem("draftNama");
-  const savedMenu = localStorage.getItem("draftMenu");
-
-  if (savedNama) {
-    document.getElementById("nama").value = savedNama;
-  }
-
-  if (savedMenu) {
-    document.getElementById("menu").value = savedMenu;
-  }
-});
-
-// Hapus draft setelah berhasil submit
-document.getElementById("orderForm").addEventListener("submit", function() {
-  localStorage.removeItem("draftNama");
-  localStorage.removeItem("draftMenu");
-});
 </script>
 
 </body>
-
 </html>
-
-
