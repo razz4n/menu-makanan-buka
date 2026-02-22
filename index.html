@@ -147,7 +147,40 @@ function showToast(message, type) {
     toast.className = "toast";
   }, 3000);
 }
+// ===============================
+// AUTO SAVE FORM (ANTI HILANG)
+// ===============================
+
+// Simpan setiap kali user mengetik
+document.getElementById("nama").addEventListener("input", function() {
+  localStorage.setItem("draftNama", this.value);
+});
+
+document.getElementById("menu").addEventListener("change", function() {
+  localStorage.setItem("draftMenu", this.value);
+});
+
+// Load kembali saat halaman dibuka
+window.addEventListener("DOMContentLoaded", function() {
+  const savedNama = localStorage.getItem("draftNama");
+  const savedMenu = localStorage.getItem("draftMenu");
+
+  if (savedNama) {
+    document.getElementById("nama").value = savedNama;
+  }
+
+  if (savedMenu) {
+    document.getElementById("menu").value = savedMenu;
+  }
+});
+
+// Hapus draft setelah berhasil submit
+document.getElementById("orderForm").addEventListener("submit", function() {
+  localStorage.removeItem("draftNama");
+  localStorage.removeItem("draftMenu");
+});
 </script>
 
 </body>
 </html>
+
